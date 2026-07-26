@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+
+# FDS simulation outputs (~5GB+). Keep input/metadata in repo.
+data/*
+!data/*.fds
+!data/*.smv
+!data/*_git.txt
+
+# Derived / archive blobs
+data/**/*.pickle
+data/**/*.zip

@@ -1,0 +1,10 @@
+name: colloid-fds-viewer
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - pygame
+  - pip
+  - pip:
+      - fdsreader
