@@ -10,7 +10,10 @@ import numpy as np
 from detect_uniform_temp import _end_index_for_length, segment_profile_mean
 from fds_slice import ScalarSliceField
 
+MAX_SEGMENT_HITS = 100
+
 __all__ = [
+    "MAX_SEGMENT_HITS",
     "MfSegment",
     "find_uniform_mass_fraction_segments",
     "segment_profile_mean",
@@ -34,10 +37,11 @@ class MfSegment:
 def find_uniform_mass_fraction_segments(
     field: ScalarSliceField,
     target_mf: float = 0.003,
-    mean_tolerance: float = 0.0002,
+    mean_tolerance: float = 0.0000275,
     segment_length_m: float = 10.0,
     y_filter_m: float | None = None,
     exclusion_mask: np.ndarray | None = None,
+    max_hits: int = MAX_SEGMENT_HITS,
 ) -> list[MfSegment]:
     """Slide a fixed-length window along Y; keep means within target ± mean_tolerance."""
     values = field.values
@@ -94,6 +98,8 @@ def find_uniform_mass_fraction_segments(
             )
 
     segments.sort(key=lambda s: (s.score, -s.length_m))
+    if max_hits > 0:
+        segments = segments[:max_hits]
     return segments
 
 

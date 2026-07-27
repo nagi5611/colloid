@@ -16,6 +16,7 @@ import numpy as np
 import pygame
 
 from detect_uniform_mass_fraction import (
+    MAX_SEGMENT_HITS,
     MfSegment,
     find_uniform_mass_fraction_segments,
     max_sliding_window_mean,
@@ -45,8 +46,8 @@ SEGMENT_PANEL_WIDTH = 500
 PANEL_GAP = 12
 PAINT_BRUSH_RADIUS_PX = 14
 
-TARGET_MF_MIN = 0.001
-TARGET_MF_STEP = 0.001
+TARGET_MF_MIN = 0.00011
+TARGET_MF_STEP = 0.000055
 TARGET_MF_MAX = 0.005
 
 
@@ -54,7 +55,7 @@ def snap_target_mass_fraction(value: float) -> float:
     stepped = TARGET_MF_MIN + round(
         (value - TARGET_MF_MIN) / TARGET_MF_STEP
     ) * TARGET_MF_STEP
-    stepped = round(stepped, 6)
+    stepped = round(stepped, 8)
     return max(TARGET_MF_MIN, min(TARGET_MF_MAX, stepped))
 
 
@@ -63,7 +64,7 @@ def step_target_mass_fraction(value: float, delta_steps: int) -> float:
 
 
 def format_mf_target(value: float) -> str:
-    return f"{value:.3f}"
+    return f"{value:.5f}"
 
 
 def format_sig2(value: float) -> str:
@@ -127,11 +128,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--data-dir", type=Path, default=default_data)
     parser.add_argument("--time", type=float, default=600.0)
-    parser.add_argument("--target", type=float, default=0.001, help="Target mean Y_s (kg/kg)")
+    parser.add_argument("--target", type=float, default=0.00011, help="Target mean Y_s (kg/kg)")
     parser.add_argument(
         "--mean-tolerance",
         type=float,
-        default=0.0005,
+        default=0.0000275,
         help="Max |mean(Y_s) - target| for a candidate window (kg/kg)",
     )
     parser.add_argument(
@@ -505,7 +506,7 @@ def draw_profile(
 
     plot = profile_rect.inflate(-16, -32)
     y_min, y_max = float(ys[0]), float(ys[-1])
-    pad = max(tolerance_mf * 2, 0.0005)
+    pad = max(tolerance_mf * 2, 0.0000275)
     t_min = min(float(np.nanmin(vals)), target_mf - pad)
     t_max = max(float(np.nanmax(vals)), target_mf + pad)
     if y_max == y_min:
@@ -562,8 +563,8 @@ def print_summary(
             f"lower target or widen tolerance."
         )
     print(
-        f"10 m sliding windows with |mean(Y_s)-{target_mf:.4f}| <= {tolerance_mf:.6f}: "
-        f"{len(segments)}"
+        f"{segment_length_m:.1f} m sliding windows with |mean(Y_s)-{target_mf:.6f}| <= "
+        f"{tolerance_mf:.6f}: {len(segments)} (max {MAX_SEGMENT_HITS})"
     )
     if segments:
         best = segments[0]
@@ -1077,10 +1078,10 @@ def run_pygame(
             f"Time: {field.time_s:.1f} s",
             f"Slice: PBX=0 ({mf_field.slice_id}) | Y_s kg/kg",
             f"Window: {segment_length_m:.1f} m | mean Y_s {format_mf_target(target_mf)} "
-            f"(+/-{mean_tolerance:.4f}) | max {segment_length_m:.0f}m mean Y_s "
+            f"(+/-{mean_tolerance:.6f}) | max {segment_length_m:.0f}m mean Y_s "
             f"{format_sig2(max_window_mean_mf)}",
             (
-                f"Segments: {len(segments)} (table: wheel to scroll)"
+                f"Segments: {len(segments)} (max {MAX_SEGMENT_HITS}, table: wheel to scroll)"
                 if segments
                 else "No segments in band"
             ),
@@ -1100,7 +1101,7 @@ def run_pygame(
         )
         lines.append(
             f"Target Y_s: +/- or [/]  ({format_mf_target(TARGET_MF_MIN)}–"
-            f"{format_mf_target(TARGET_MF_MAX)}, step {TARGET_MF_STEP:.3f})"
+            f"{format_mf_target(TARGET_MF_MAX)}, step {format_mf_target(TARGET_MF_STEP)})"
         )
         lines.append("Space: next | 1-9,0: pick | click table row | F11: fullscreen | Q: Quit")
         for i, text in enumerate(lines):

@@ -16,6 +16,7 @@ import numpy as np
 import pygame
 
 from detect_uniform_temp import (
+    MAX_SEGMENT_HITS,
     TempSegment,
     find_uniform_temp_segments,
     segment_profile_mean,
@@ -537,7 +538,8 @@ def print_summary(
     print(f"Time: {field.time_s:.1f} s | Slice: PBX=0 ({field.slice_id}) at x={field.x_plane_m:.3f} m")
     print(f"Field temperature range: {tmin:.2f} - {tmax:.2f} C")
     print(
-        f"10 m sliding windows with |mean(T)-{target_c}| <= {tolerance_c} C: {len(segments)}"
+        f"10 m sliding windows with |mean(T)-{target_c}| <= {tolerance_c} C: "
+        f"{len(segments)} (max {MAX_SEGMENT_HITS})"
     )
     if segments:
         best = segments[0]
@@ -1065,7 +1067,7 @@ def run_pygame(
             f"Slice: PBX=0 ({field.slice_id})",
             f"Window: {segment_length_m:.1f} m | mean T {target_c:.1f} C (+/-{mean_tolerance_c:.1f} C)",
             (
-                f"Segments: {len(segments)} (table: wheel to scroll)"
+                f"Segments: {len(segments)} (max {MAX_SEGMENT_HITS}, table: wheel to scroll)"
                 if segments
                 else "No segments in band"
             ),

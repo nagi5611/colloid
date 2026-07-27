@@ -9,6 +9,8 @@ import numpy as np
 
 from fds_slice import SliceField
 
+MAX_SEGMENT_HITS = 100
+
 
 @dataclass(frozen=True)
 class TempSegment:
@@ -39,6 +41,7 @@ def find_uniform_temp_segments(
     segment_length_m: float = 10.0,
     y_filter_m: float | None = None,
     exclusion_mask: np.ndarray | None = None,
+    max_hits: int = MAX_SEGMENT_HITS,
 ) -> list[TempSegment]:
     """Slide a fixed-length window along Y; keep means within target ± mean_tolerance."""
     temp = field.temperature
@@ -95,6 +98,8 @@ def find_uniform_temp_segments(
             )
 
     segments.sort(key=lambda s: (s.score, -s.length_m))
+    if max_hits > 0:
+        segments = segments[:max_hits]
     return segments
 
 
