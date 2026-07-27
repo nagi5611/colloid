@@ -95,3 +95,23 @@ def find_uniform_mass_fraction_segments(
 
     segments.sort(key=lambda s: (s.score, -s.length_m))
     return segments
+
+
+def max_sliding_window_mean(
+    field: ScalarSliceField,
+    segment_length_m: float = 10.0,
+) -> float:
+    """Maximum mean Y_s over any fixed-length Y window (same geometry as segment search)."""
+    values = field.values
+    y_coords = np.asarray(field.y_coords, dtype=np.float64)
+    ny = len(y_coords)
+    best = 0.0
+    for z_idx in range(values.shape[1]):
+        for start in range(ny):
+            end = _end_index_for_length(y_coords, start, segment_length_m)
+            if end is None:
+                break
+            mean_mf = float(np.nanmean(values[start : end + 1, z_idx]))
+            if np.isfinite(mean_mf) and mean_mf > best:
+                best = mean_mf
+    return best

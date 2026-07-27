@@ -166,6 +166,18 @@ def load_pbx_scalar_from_sim(
     )
 
 
+def slice_field_from_scalar(scalar: ScalarSliceField) -> SliceField:
+    """Reuse slice viewer helpers (heatmap, geometry) with a scalar PBX field."""
+    return SliceField(
+        temperature=np.asarray(scalar.values, dtype=np.float64),
+        y_coords=np.asarray(scalar.y_coords, dtype=np.float64),
+        z_coords=np.asarray(scalar.z_coords, dtype=np.float64),
+        time_s=scalar.time_s,
+        slice_id=scalar.slice_id,
+        x_plane_m=scalar.x_plane_m,
+    )
+
+
 def load_pbx_temperature_slice(data_dir: Path, time_s: float = 600.0) -> SliceField:
     """Convenience wrapper that loads the simulation and reads the PBX slice."""
     return load_pbx_temperature_from_sim(load_simulation(data_dir), time_s=time_s)
